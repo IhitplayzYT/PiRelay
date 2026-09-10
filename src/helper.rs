@@ -13,26 +13,44 @@ pub mod Helper{
         pub dbg:bool,
         pub method: String,
         pub send: HashMap<String,Vec<PathBuf>>,
-        pub recieve: Vec<String>,
+        pub receive: Vec<String>,
         pub connection:Connection,
         pub srcdir: Option<PathBuf>,
         pub config:Option<String>,
     }
 
     pub fn Help(){
-        println!("{DBG_STR}");
+        println!("PiRelay - File Transfer Client\n");
+        println!("USAGE:");
+        println!("    pirelay <METHOD> [OPTIONS]\n");
+        println!("METHODS:");
+        println!("    SEND     Send files to recipients");
+        println!("    RECEIVE  Receive files from senders\n");
+        println!("OPTIONS:");
+        println!("    -d, --debug              Enable debug mode");
+        println!("    -s=<path>, --src=<path>  Output directory for received files");
+        println!("    -conf=<path>, --config=<path>  Path to config JSON file");
+        println!("    -c=(url,ip,port,hostname), --conn=(...)  Connection settings");
+        println!("    --send=recipient=(file1,file2,...)  Send files to recipient");
+        println!("    --receive=(sender1,sender2,...)     Receive from specific senders\n");
+        println!("EXAMPLES:");
+        println!("    pirelay SEND --send=alice=(file.txt,doc.pdf)");
+        println!("    pirelay RECEIVE --receive=(alice,bob)");
+        println!("    pirelay RECEIVE -s=./downloads");
         exit(0);
-
     }
 
     impl CLI{
         pub fn new() -> Self{
-            Self { dbg: false, method: "RECIEVE".to_string(), send: HashMap::new(), recieve: vec![], srcdir:None,connection:Connection::default(),config:None}
+            Self { dbg: false, method: "RECEIVE".to_string(), send: HashMap::new(), receive: vec![], srcdir:None,connection:Connection::default(),config:None}
         }
 
 
         pub fn Parse_Args(&mut self){
             let args = std::env::args().skip(1).collect::<Vec<String>>();
+            if args.is_empty() {
+                Help();
+            }
             self.method = (&args[0]).to_ascii_uppercase();
             let args = args.into_iter().skip(1).collect::<Vec<String>>();
             for i in &args{
@@ -54,9 +72,9 @@ pub mod Helper{
                     let recipient = &i[i.find("=").unwrap()+1..sp-1];
                     let data = i[sp..ed].split(",").map(|x| PathBuf::from(x.trim())).collect::<Vec<PathBuf>>();
                     self.send.insert(recipient.to_string(),data);
-                }else if i.starts_with("--recieve"){
+                }else if i.starts_with("--receive"){
                     let (sp,ed) = (i.find("(").unwrap()+1,i.find(")").unwrap());
-                    self.recieve.append(&mut i[sp..ed].split(",").map(|x| x.trim().to_string()).collect::<Vec<String>>());
+                    self.receive.append(&mut i[sp..ed].split(",").map(|x| x.trim().to_string()).collect::<Vec<String>>());
                 }else{
                     Help();
                 }

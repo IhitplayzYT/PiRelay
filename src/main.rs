@@ -27,7 +27,7 @@ async fn main() {
 
     let result = match clargs.method.as_str() {
         "SEND" => PiRelay::send(&clargs).await,
-        "RECIEVE" => PiRelay::receive(&clargs).await,
+        "RECEIVE" => PiRelay::receive(&clargs).await,
         _ => {
             eprintln!("Unknown method: {}", clargs.method);
             helper::Helper::Help();
